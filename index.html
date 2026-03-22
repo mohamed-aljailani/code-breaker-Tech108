@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tech 108 Quest - جميع المستويات</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0d1b31;
+      --panel:rgba(10,20,36,.92);
+      --panel2:rgba(14,28,49,.96);
+      --primary:#3b82f6;
+      --cyan:#06b6d4;
+      --gold:#f59e0b;
+      --green:#22c55e;
+      --red:#ef4444;
+      --purple:#8b5cf6;
+      --text:#e8f0ff;
+      --muted:#9fb3cc;
+      --border:rgba(96,165,250,.18);
+      --shadow:0 0 0 1px rgba(59,130,246,.16),0 20px 60px rgba(2,6,23,.55);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI",Tahoma,Arial,sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.14), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(245,158,11,.10), transparent 25%),
+        linear-gradient(135deg,var(--bg),var(--bg2));
+    }
+
+    .container{max-width:1180px;margin:auto;padding:22px}
+    .panel,.hero,.question,.result,.stage-card,.mini-card,.map-card,.leaderboard{
+      background:linear-gradient(180deg,rgba(11,26,45,.97),rgba(8,18,33,.97));
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(8px);
+    }
+
+    .hero{padding:34px;position:relative;overflow:hidden}
+    .hero::before,.hero::after{
+      content:"";position:absolute;border-radius:50%;filter:blur(12px);pointer-events:none
+    }
+    .hero::before{
+      width:260px;height:260px;right:-80px;top:-90px;
+      background:radial-gradient(circle, rgba(59,130,246,.32), transparent 68%);
+    }
+    .hero::after{
+      width:220px;height:220px;left:-60px;bottom:-80px;
+      background:radial-gradient(circle, rgba(245,158,11,.20), transparent 68%);
+    }
+
+    .screen{display:none}
+    .screen.active{display:block}
+
+    h1,h2,h3{margin-top:0}
+    h1{font-size:40px;margin-bottom:10px}
+    h2{font-size:28px}
+    h3{color:#bfdbfe}
+    p{line-height:1.9}
+
+    .tag{
+      display:inline-block;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:800;
+      background:linear-gradient(135deg, rgba(59,130,246,.16), rgba(6,182,212,.14));
+      color:#dbeafe;border:1px solid rgba(96,165,250,.24);margin-bottom:14px
+    }
+
+    .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+    .status-wrap{display:flex;gap:10px;flex-wrap:wrap}
+    .status-pill{
+      background:rgba(255,255,255,.05);border:1px solid rgba(96,165,250,.22);
+      padding:10px 14px;border-radius:999px;font-weight:800;color:#dbeafe
+    }
+
+    .name-box{max-width:420px;margin:16px auto 0}
+    input[type="text"],input[type="number"]{
+      width:100%;padding:14px 16px;border-radius:14px;
+      border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.05);color:#eff6ff;font-size:16px;outline:none
+    }
+    input:focus{border-color:rgba(59,130,246,.55);box-shadow:0 0 0 4px rgba(59,130,246,.12)}
+    input::placeholder{color:#91a4bd}
+
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+    button{
+      border:none;border-radius:14px;padding:14px 22px;font-size:15px;font-weight:800;cursor:pointer;
+      transition:.18s ease;color:#fff
+    }
+    button:hover{transform:translateY(-2px)}
+    .primary{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+    .secondary{background:rgba(255,255,255,.06);border:1px solid rgba(147,197,253,.25);color:#dbeafe}
+    .gold{background:linear-gradient(135deg,#f59e0b,#f97316)}
+    .danger{background:linear-gradient(135deg,#dc2626,#ef4444)}
+    .purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
+    .green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+
+    .grid{display:grid;gap:16px}
+    .grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+    .grid-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .mini-card,.panel,.result,.leaderboard,.map-card{padding:22px}
+    .question{padding:22px;margin-top:18px;display:none}
+    .question.active{display:block}
+    .stage-card{padding:18px;position:relative;overflow:hidden}
+    .stage-card.locked{opacity:.62}
+    .stage-card.done{border-color:rgba(34,197,94,.34)}
+    .stage-card.current{border-color:rgba(245,158,11,.4)}
+
+    .stage-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+    .badge{padding:6px 12px;border-radius:999px;font-weight:800;font-size:12px;border:1px solid rgba(148,163,184,.2)}
+    .easy{background:rgba(34,197,94,.12);color:#bbf7d0}
+    .mid{background:rgba(59,130,246,.12);color:#bfdbfe}
+    .hard{background:rgba(245,158,11,.12);color:#fde68a}
+    .boss{background:rgba(239,68,68,.12);color:#fecaca}
+
+    .code,.eq{
+      background:#020817;border:1px solid rgba(59,130,246,.16);border-radius:14px;padding:14px 16px;
+      color:#e2e8f0;direction:ltr;text-align:left;font-family:"Consolas","Courier New",monospace;
+      overflow:auto;line-height:1.85;white-space:pre-wrap;margin:10px 0
+    }
+    .eq{text-align:center}
+
+    .answers{display:grid;gap:10px;margin-top:14px}
+    .answer-btn{
+      width:100%;text-align:right;background:rgba(255,255,255,.04);
+      border:1px solid rgba(148,163,184,.2);color:var(--text);padding:13px 14px;border-radius:14px
+    }
+    .answer-btn:hover{background:rgba(59,130,246,.12);border-color:rgba(96,165,250,.35)}
+
+    .feedback{min-height:30px;margin-top:12px;font-weight:800}
+    .success{color:var(--green)}
+    .error{color:var(--red)}
+
+    .check-list{display:grid;gap:10px;margin-top:12px}
+    .check-item{
+      display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.04);
+      border:1px solid rgba(148,163,184,.18);padding:12px 14px;border-radius:14px
+    }
+
+    .drag-bank{
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:center;background:rgba(255,255,255,.03);
+      border:1px solid rgba(148,163,184,.18);border-radius:16px;padding:14px;margin-top:12px
+    }
+    .drag-item{
+      background:rgba(255,255,255,.05);border:1px solid rgba(148,163,184,.2);color:#eff6ff;
+      border-radius:999px;padding:10px 14px;font-weight:800;cursor:grab;user-select:none
+    }
+    .drag-item.used{opacity:.35;cursor:not-allowed}
+    .drop-slot{
+      display:inline-block;min-width:120px;padding:6px 10px;margin:0 4px;border:2px dashed rgba(96,165,250,.55);
+      border-radius:10px;background:rgba(255,255,255,.04);color:#f8fafc;text-align:center;vertical-align:middle
+    }
+    .drop-slot.filled-slot{border-style:solid;background:rgba(34,197,94,.14);border-color:#4ade80}
+
+    .progress-line{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-top:20px}
+    .node{
+      min-height:78px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(148,163,184,.18);
+      display:flex;align-items:center;justify-content:center;flex-direction:column;font-weight:900;padding:8px;text-align:center
+    }
+    .node.done{background:linear-gradient(135deg, rgba(34,197,94,.14), rgba(59,130,246,.10));border-color:rgba(34,197,94,.45)}
+    .node.current{background:linear-gradient(135deg, rgba(245,158,11,.18), rgba(59,130,246,.10));border-color:rgba(245,158,11,.5)}
+
+    .map-card{margin-top:18px}
+    .result{display:none;text-align:center;margin-top:20px;background:linear-gradient(135deg, rgba(34,197,94,.14), rgba(59,130,246,.08), rgba(245,158,11,.08))}
+    .final-code{font-size:50px;font-weight:900;letter-spacing:8px;margin:12px 0;text-shadow:0 0 16px rgba(59,130,246,.3)}
+    .leaderboard ol{margin:8px 0 0;padding-right:20px;line-height:2}
+
+    .celebration{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:999;display:none}
+    .confetti{position:absolute;top:-20px;width:12px;height:18px;border-radius:4px;animation:fall 3.8s linear forwards;opacity:.95}
+    @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.7}}
+
+    .muted{color:var(--muted)}
+    .center{text-align:center}
+
+    @media (max-width:900px){
+      .progress-line{grid-template-columns:repeat(4,1fr)}
+    }
+    @media (max-width:700px){
+      h1{font-size:30px}
+      h2{font-size:24px}
+      .hero,.question,.panel,.result,.stage-card,.mini-card,.map-card,.leaderboard{padding:18px}
+      .progress-line{grid-template-columns:repeat(2,1fr)}
+      .final-code{font-size:36px}
+    }
+  
+
+    /* === VISUAL UPGRADE PACK === */
+    :root{
+      --pink:#ec4899;
+      --neon:#38bdf8;
+      --panelGlow:0 0 0 1px rgba(56,189,248,.16), 0 14px 40px rgba(2,6,23,.72), 0 0 40px rgba(59,130,246,.10);
+    }
+    body{
+      background:
+        radial-gradient(circle at 10% 20%, rgba(56,189,248,.16), transparent 26%),
+        radial-gradient(circle at 88% 18%, rgba(139,92,246,.16), transparent 24%),
+        radial-gradient(circle at 78% 82%, rgba(236,72,153,.10), transparent 22%),
+        radial-gradient(circle at 18% 85%, rgba(245,158,11,.10), transparent 24%),
+        linear-gradient(135deg,#030712 0%,#081224 35%,#0b1730 65%,#050914 100%);
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;inset:0;pointer-events:none;z-index:-2;
+      background-image:
+        linear-gradient(rgba(59,130,246,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,.06) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.42), rgba(0,0,0,.06));
+    }
+    .fx-bg{
+      position:fixed; inset:0; pointer-events:none; z-index:-1; overflow:hidden;
+    }
+    .orb{
+      position:absolute; border-radius:999px; filter:blur(22px); opacity:.38; mix-blend-mode:screen;
+      animation: floatOrb linear infinite alternate;
+    }
+    .orb1{width:260px;height:260px;top:8%;right:6%;background:radial-gradient(circle, rgba(59,130,246,.9), transparent 68%);animation-duration:11s}
+    .orb2{width:220px;height:220px;top:62%;left:3%;background:radial-gradient(circle, rgba(245,158,11,.85), transparent 68%);animation-duration:13s}
+    .orb3{width:180px;height:180px;top:26%;left:12%;background:radial-gradient(circle, rgba(236,72,153,.75), transparent 68%);animation-duration:9s}
+    .orb4{width:200px;height:200px;bottom:8%;right:18%;background:radial-gradient(circle, rgba(139,92,246,.82), transparent 68%);animation-duration:15s}
+    @keyframes floatOrb{
+      from{transform:translate3d(0,0,0) scale(1)}
+      to{transform:translate3d(24px,-18px,0) scale(1.08)}
+    }
+    .hero,.panel,.question,.result,.stage-card,.mini-card,.map-card,.leaderboard{
+      box-shadow:var(--panelGlow);
+      border:1px solid rgba(148,163,184,.18);
+      background:linear-gradient(180deg, rgba(10,18,36,.82), rgba(7,13,26,.92));
+      backdrop-filter: blur(14px) saturate(1.2);
+    }
+    .hero{
+      border-radius:32px;
+      background:
+        linear-gradient(140deg, rgba(15,23,42,.90), rgba(4,10,24,.96)),
+        radial-gradient(circle at top right, rgba(56,189,248,.14), transparent 28%);
+    }
+    .hero::before{width:320px;height:320px;right:-70px;top:-120px;filter:blur(18px);background:radial-gradient(circle, rgba(56,189,248,.35), transparent 68%)}
+    .hero::after{width:280px;height:280px;left:-60px;bottom:-120px;filter:blur(18px);background:radial-gradient(circle, rgba(139,92,246,.24), transparent 68%)}
+    h1{
+      font-size:46px;
+      background:linear-gradient(90deg,#ffffff,#dbeafe 30%,#93c5fd 60%,#f0abfc 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow:none;
+      letter-spacing:.4px;
+    }
+    h2{font-size:31px}
+    h2, h3{letter-spacing:.2px}
+    .tag,.badge,.status-pill,button,.drag-item,.answer-btn,.node,.drop-slot,.check-item,input{
+      transition:all .22s ease;
+    }
+    .tag{
+      background:linear-gradient(135deg, rgba(56,189,248,.16), rgba(139,92,246,.16));
+      border-color:rgba(96,165,250,.30);
+      box-shadow:0 0 18px rgba(56,189,248,.08) inset;
+    }
+    .status-pill{
+      background:linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 18px rgba(59,130,246,.06);
+    }
+    .mini-card,.stage-card,.map-card,.leaderboard,.panel,.question,.result{
+      position:relative;
+      overflow:hidden;
+    }
+    .mini-card::before,.stage-card::before,.map-card::before,.leaderboard::before,.panel::before,.question::before,.result::before{
+      content:"";
+      position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.05) 20%, transparent 38%);
+      transform:translateX(-120%);
+      animation: sheen 8s linear infinite;
+    }
+    @keyframes sheen{to{transform:translateX(130%)}}
+    .stage-card:hover,.mini-card:hover,.map-card:hover,.panel:hover,.leaderboard:hover,.question:hover{
+      transform:translateY(-4px);
+      border-color:rgba(56,189,248,.34);
+      box-shadow:0 0 0 1px rgba(56,189,248,.18), 0 20px 50px rgba(2,6,23,.8), 0 0 35px rgba(56,189,248,.08);
+    }
+    .stage-card.current{box-shadow:0 0 0 1px rgba(245,158,11,.42), 0 20px 50px rgba(2,6,23,.8), 0 0 35px rgba(245,158,11,.08)}
+    .stage-card.done{box-shadow:0 0 0 1px rgba(34,197,94,.36), 0 18px 45px rgba(2,6,23,.8), 0 0 30px rgba(34,197,94,.08)}
+    .answer-btn,.check-item,.drag-item,.node,.drop-slot,input[type="text"],input[type="number"]{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border-color:rgba(148,163,184,.18);
+    }
+    .answer-btn:hover,.drag-item:hover,.drop-slot:hover{
+      transform:translateY(-2px) scale(1.01);
+      box-shadow:0 8px 22px rgba(2,6,23,.48), 0 0 18px rgba(56,189,248,.08);
+    }
+    button{
+      position:relative; overflow:hidden;
+      box-shadow:0 12px 24px rgba(2,6,23,.35), inset 0 1px 0 rgba(255,255,255,.12);
+    }
+    button::after{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(120deg, transparent, rgba(255,255,255,.25), transparent);
+      transform:translateX(-140%);
+    }
+    button:hover::after{animation:btnShine .9s ease}
+    @keyframes btnShine{to{transform:translateX(140%)}}
+    .primary{background:linear-gradient(135deg,#0ea5e9,#2563eb 52%,#8b5cf6)}
+    .secondary{background:linear-gradient(135deg, rgba(30,41,59,.92), rgba(15,23,42,.92));border:1px solid rgba(148,163,184,.2)}
+    .gold{background:linear-gradient(135deg,#f59e0b,#f97316,#fb7185)}
+    .purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6,#ec4899)}
+    .green{background:linear-gradient(135deg,#059669,#22c55e,#14b8a6)}
+    .danger{background:linear-gradient(135deg,#dc2626,#ef4444,#f97316)}
+    .progress-line{
+      gap:14px;
+    }
+    .node{
+      border-radius:22px;
+      min-height:86px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 20px rgba(2,6,23,.25);
+    }
+    .node.done{
+      background:linear-gradient(135deg, rgba(34,197,94,.16), rgba(56,189,248,.10));
+    }
+    .node.current{
+      background:linear-gradient(135deg, rgba(245,158,11,.18), rgba(139,92,246,.10));
+      animation:pulseNode 1.8s ease-in-out infinite;
+    }
+    @keyframes pulseNode{
+      0%,100%{box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 20px rgba(2,6,23,.25), 0 0 0 0 rgba(245,158,11,.22)}
+      50%{box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 20px rgba(2,6,23,.25), 0 0 0 10px rgba(245,158,11,0)}
+    }
+    .code,.eq{
+      background:linear-gradient(180deg, #030712, #071124);
+      border-color:rgba(56,189,248,.18);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 10px 22px rgba(2,6,23,.35);
+    }
+    .feedback.success{ text-shadow:0 0 12px rgba(34,197,94,.25)}
+    .feedback.error{ text-shadow:0 0 12px rgba(239,68,68,.18)}
+    .final-code{
+      font-size:58px;
+      background:linear-gradient(90deg,#fff7ed,#fde68a,#93c5fd,#c4b5fd);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      text-shadow:none;
+    }
+    .leaderboard ol li{
+      padding:8px 10px; margin:6px 0; border-radius:12px;
+      background:rgba(255,255,255,.03); border:1px solid rgba(148,163,184,.12);
+      list-style-position:inside;
+    }
+    @media (max-width:700px){
+      h1{font-size:34px}
+      .final-code{font-size:42px}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="fx-bg" aria-hidden="true">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+    <div class="orb orb4"></div>
+  </div>
+
+  <div class="celebration" id="celebration"></div>
+
+  <div class="container">
+    <section class="screen active" id="screen-home">
+      <div class="hero">
+        <div class="topbar">
+          <div class="status-wrap">
+            <div class="status-pill" id="studentBadge">🎯 الطالب: لم يبدأ بعد</div>
+            <div class="status-pill" id="scoreBadge">⭐ النقاط: 0</div>
+            <div class="status-pill" id="xpBadge">⚡ XP: 0</div>
+            <div class="status-pill" id="levelBadge">🧭 المستوى الحالي: البداية</div>
+          </div>
+        </div>
+
+        <div class="tag">TECH 108 QUEST | ملف واحد | جميع المستويات</div>
+        <h1>🎮 تحدي مقرر تقن 108</h1>
+        <p>
+          رحلة تعليمية كاملة من الأساسيات إلى المستوى المتقدم. يبدأ الطالب من المفاهيم السهلة مثل أنواع البيانات والمتغيرات،
+          ثم يتدرج إلى الإدخال والإخراج، القوائم، الشروط، التكرار، الدوال، المكتبات، وأخيرًا <strong>Final Boss</strong> في تصحيح الأخطاء.
+        </p>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <div class="mini-card">
+            <h3>كيف تعمل الرحلة؟</h3>
+            <p>كل مرحلة تحتوي على 4 أقفال تقريبًا. لا يمكن فتح المرحلة التالية إلا بعد إنهاء الحالية.</p>
+          </div>
+          <div class="mini-card">
+            <h3>نظام اللعب</h3>
+            <p>إجابات صحيحة = نقاط + XP. أخطاء = خصم بسيط. عند إنهاء جميع المراحل يظهر الإنجاز النهائي ولوحة الشرف.</p>
+          </div>
+        </div>
+
+        <div class="progress-line" id="journeyNodes"></div>
+
+        <div class="name-box">
+          <label><strong>أدخل اسم الطالب</strong></label>
+          <input type="text" id="studentName" placeholder="مثال: محمد" />
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" onclick="startGame()">🚀 ابدأ الرحلة</button>
+          <button class="secondary" onclick="loadSavedProgress()">📂 تحميل التقدم المحفوظ</button>
+        </div>
+      </div>
+
+      <div class="map-card">
+        <div class="tag">خريطة المستويات</div>
+        <div class="grid grid-2" id="stagesOverview"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-game">
+      <div class="panel">
+        <div class="topbar">
+          <div class="status-wrap">
+            <div class="status-pill" id="studentBadge2">🎯 الطالب:</div>
+            <div class="status-pill" id="scoreBadge2">⭐ النقاط: 0</div>
+            <div class="status-pill" id="xpBadge2">⚡ XP: 0</div>
+            <div class="status-pill" id="levelBadge2">🧭 المستوى الحالي:</div>
+          </div>
+          <div class="status-wrap">
+            <div class="status-pill" id="stageProgressBadge">🔐 القفل: 1 / 4</div>
+          </div>
+        </div>
+
+        <div class="tag" id="stageTag">المستوى</div>
+        <h2 id="stageTitle">عنوان المرحلة</h2>
+        <p id="stageStory" class="muted"></p>
+        <div id="questionHost"></div>
+
+        <div class="result" id="stageResult">
+          <h3 id="stageResultTitle">تم إنهاء المرحلة</h3>
+          <p id="stageResultText"></p>
+          <div class="btn-row" id="stageResultButtons"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-final">
+      <div class="hero center">
+        <div class="tag">🏆 النهاية الكبرى</div>
+        <h1>تم إنهاء جميع مستويات تقن 108 بنجاح</h1>
+        <p>أكمل الطالب الرحلة كاملة من الأساسيات حتى تصحيح الأخطاء البرمجية.</p>
+        <div class="final-code">TECH108</div>
+        <p id="finalSummary"></p>
+
+        <div class="leaderboard">
+          <strong>🏆 لوحة الشرف</strong>
+          <ol id="leaderboardList"><li>بانتظار أول بطل...</li></ol>
+        </div>
+
+        <div class="btn-row">
+          <button class="gold" onclick="restartAll()">إعادة الرحلة من البداية</button>
+          <button class="secondary" onclick="showScreen('screen-home')">العودة للرئيسية</button>
+          <button class="danger" onclick="clearLeaderboard()">مسح لوحة الشرف</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const stages = [
+      {
+        id:'s1',
+        short:'1',
+        title:'Level 1 - Fundamentals',
+        subtitle:'الأساسيات',
+        difficulty:'easy',
+        story:'ابدأ من الأساس: أنواع البيانات، المتغيرات، والثوابت. هذه المرحلة تبني لغة البرمجة في ذهن الطالب قبل الانتقال لما بعدها.',
+        questions:[
+          {type:'mcq', points:10, prompt:'ما نوع البيانات للقيمة التالية؟', code:'x = "Bahrain"', options:['int','str','float','bool'], correct:1},
+          {type:'mcq', points:10, prompt:'أي اسم متغير صحيح في بايثون؟', options:['2name','my-name','student_score','print'], correct:2},
+          {type:'input', points:12, prompt:'أدخل ناتج العملية التالية:', code:'print(7 + 3 * 2)', answer:'13'},
+          {type:'mcq', points:13, prompt:'أي عبارة تمثل ثابتًا وفق الأسلوب المتبع في الدرس؟', options:['pi = 3.14','PI = 3.14','3.14 = PI','PI == 3.14'], correct:1}
+        ]
+      },
+      {
+        id:'s2',
+        short:'2',
+        title:'Level 2 - Input / Output & Number Functions',
+        subtitle:'الإدخال والإخراج والدوال العددية',
+        difficulty:'easy',
+        story:'الآن يبدأ النظام بالتفاعل مع المستخدم. على الطالب فهم print و input وبعض الدوال المضمنة الخاصة بالأرقام.',
+        questions:[
+          {type:'mcq', points:10, prompt:'أي دالة تُستخدم لعرض البيانات على الشاشة؟', options:['input()','print()','int()','len()'], correct:1},
+          {type:'mcq', points:10, prompt:'ما وظيفة input()؟', options:['إدخال بيانات من المستخدم','طباعة النتائج','حذف المتغيرات','إنشاء حلقة تكرار'], correct:0},
+          {type:'input', points:12, prompt:'ما ناتج السطر التالي؟', code:'print(abs(-9))', answer:'9'},
+          {type:'drag', points:14, prompt:'رتّب السطور لتكوين برنامج صحيح يطلب الاسم ثم يطبعه.', items:['name = input("Enter your name: ")','print(name)'], accepts:['name = input("Enter your name: ")','print(name)']}
+        ]
+      },
+      {
+        id:'s3',
+        short:'3',
+        title:'Level 3 - Lists',
+        subtitle:'القوائم',
+        difficulty:'mid',
+        story:'دخلنا الآن إلى مخزن البيانات. القوائم تساعد الطالب على تخزين أكثر من قيمة داخل متغير واحد.',
+        questions:[
+          {type:'mcq', points:10, prompt:'أي مما يلي يمثل قائمة في بايثون؟', options:['(1,2,3)','{1,2,3}','[1,2,3]','<1,2,3>'], correct:2},
+          {type:'input', points:12, prompt:'ما العنصر الموجود في الفهرس 1؟', code:'cars = ["Toyota", "Nissan", "Mazda"]\nprint(cars[1])', answer:'Nissan'},
+          {type:'mcq', points:12, prompt:'هل يمكن أن تحتوي القائمة على أنواع بيانات مختلفة؟', options:['لا','نعم'], correct:1},
+          {type:'checkbox', points:14, prompt:'حدّد العبارات الصحيحة حول القوائم.', options:['تسمح بتخزين أكثر من قيمة','كل العناصر يجب أن تكون من نفس النوع','نستخدم [] لإنشائها','يمكن الوصول للعناصر بالفهرس'], correctChecks:[0,2,3]}
+        ]
+      },
+      {
+        id:'s4',
+        short:'4',
+        title:'Level 4 - Conditional Statements',
+        subtitle:'الجمل الشرطية',
+        difficulty:'mid',
+        story:'بدأ محرك القرارات بالعمل. يجب على الطالب فهم if البسيطة والكاملة ومتعددة الشروط لاتخاذ القرار المناسب.',
+        questions:[
+          {type:'mcq', points:10, prompt:'بأي كلمة تبدأ الجملة الشرطية في بايثون؟', options:['for','if','while','def'], correct:1},
+          {type:'mcq', points:11, prompt:'أي جملة تمثل شرطًا كاملاً؟', code:'if mark >= 50:\n    print("Pass")\nelse:\n    print("Fail")', options:['جملة شرطية بسيطة','جملة شرطية كاملة','حلقة تكرار','بناء دالة'], correct:1},
+          {type:'input', points:12, prompt:'إذا كانت x = 8 فما الناتج؟', code:'x = 8\nif x > 5:\n    print("High")\nelse:\n    print("Low")', answer:'High'},
+          {type:'mcq', points:14, prompt:'عند وجود أكثر من فحص وشروط متداخلة نستخدم:', options:['قائمة','جملة شرطية متعددة الشروط','تعليق برمجي','مكتبة'], correct:1}
+        ]
+      },
+      {
+        id:'s5',
+        short:'5',
+        title:'Level 5 - Loops',
+        subtitle:'التكرار for / while / break / continue',
+        difficulty:'hard',
+        story:'وصلنا إلى غرفة التكرار. هنا يفهم الطالب متى يستخدم for ومتى يستخدم while، وكيف يكسر الحلقة أو يتجاوز عنصرًا منها.',
+        questions:[
+          {type:'mcq', points:10, prompt:'أي جملة تكرارية تناسب عدد مرات تكرار معلوم مسبقًا؟', options:['while','for','if','def'], correct:1},
+          {type:'input', points:12, prompt:'كم مرة ستنفذ الحلقة التالية؟', code:'for i in range(5):\n    print(i)', answer:'5'},
+          {type:'mcq', points:13, prompt:'ما وظيفة break؟', options:['تجاوز عنصر محدد فقط','إنهاء الحلقة والخروج منها','بدء الحلقة من جديد','طباعة الشرط'], correct:1},
+          {type:'mcq', points:15, prompt:'ما ناتج البرنامج التالي؟', code:'x = 1\nwhile x < 4:\n    print(x)\n    x += 1', options:['1 2 3','0 1 2 3','1 2 3 4','حلقة لا نهائية'], correct:0}
+        ]
+      },
+      {
+        id:'s6',
+        short:'6',
+        title:'Level 6 - Functions',
+        subtitle:'بناء الدوال',
+        difficulty:'hard',
+        story:'أصبح الطالب الآن مستعدًا لتنظيم الحلول داخل دوال، مع فهم القالب العام للدالة والمتغيرات الخاصة بها parameters.',
+        questions:[
+          {type:'mcq', points:10, prompt:'بأي كلمة نبدأ تعريف الدالة؟', options:['function','def','fun','class'], correct:1},
+          {type:'mcq', points:12, prompt:'ما الاسم الصحيح للعوامل التي تمرر إلى الدالة؟', options:['indexes','operators','parameters','loops'], correct:2},
+          {type:'drag', points:14, prompt:'رتّب مكونات الدالة الصحيحة.', items:['def greet(name):','    print(name)'], accepts:['def greet(name):','    print(name)']},
+          {type:'input', points:14, prompt:'ما ناتج البرنامج؟', code:'def add(a, b):\n    return a + b\nprint(add(2, 3))', answer:'5'}
+        ]
+      },
+      {
+        id:'s7',
+        short:'7',
+        title:'Level 7 - Python Libraries',
+        subtitle:'المكتبات',
+        difficulty:'hard',
+        story:'هذه المرحلة تفتح باب الأدوات الجاهزة. الطالب يتعرف على مفهوم المكتبات وأهمية datetime و random.',
+        questions:[
+          {type:'mcq', points:10, prompt:'ما المقصود بالمكتبات في بايثون؟', options:['ملفات صور','أوامر جاهزة مكتوبة مسبقًا','أنواع بيانات جديدة فقط','أخطاء برمجية'], correct:1},
+          {type:'mcq', points:12, prompt:'أي مكتبة تُستخدم للتعامل مع التواريخ؟', options:['random','datetime','mathlist','screen'], correct:1},
+          {type:'mcq', points:12, prompt:'أي مكتبة تناسب توليد أعداد عشوائية؟', options:['datetime','range','random','bool'], correct:2},
+          {type:'checkbox', points:16, prompt:'حدّد فوائد المكتبات.', options:['توفر الوقت','تقلل كتابة الأكواد من الصفر','تزيد الأخطاء عمدًا','توفر أدوات جاهزة'], correctChecks:[0,1,3]}
+        ]
+      },
+      {
+        id:'s8',
+        short:'BOSS',
+        title:'Final Boss - Common Errors',
+        subtitle:'الأخطاء الشائعة',
+        difficulty:'boss',
+        story:'المعركة النهائية. على الطالب أن يفهم سبب الخطأ ويصححه. هذه المرحلة تقيس الفهم الحقيقي، لا الحفظ.',
+        questions:[
+          {type:'checkbox', points:15, prompt:'حدّد الأخطاء الصحيحة في الكود التالي.', code:'x = input("Enter number")\nprint(x + 5)', options:['يجب تحويل x إلى int إذا أردنا جمع رقم','print خطأ دائمًا','input يعيد قيمة نصية','يجب حذف + 5'], correctChecks:[0,2]},
+          {type:'mcq', points:12, prompt:'ما نوع الخطأ الغالب عند نسيان المسافة البادئة داخل if أو for؟', options:['Syntax/Indentation error','Type error','Math error','Library error'], correct:0},
+          {type:'input', points:14, prompt:'صحّح اسم الدالة المضمنة التالية بكتابتها بشكل صحيح:', code:'prit("Hello")', answer:'print'},
+          {type:'mcq', points:14, prompt:'في الكود التالي، ما التصحيح الصحيح؟', code:'if x = 5:\n    print("ok")', options:['if x == 5:','if x := 5:','if x => 5:','if x === 5:'], correct:0},
+          {type:'mcq', points:15, prompt:'إذا ظهر خطأ لأننا حاولنا جمع نص مع رقم، فهذا غالبًا:', options:['Type error','Loop error','List error','Random error'], correct:0}
+        ]
+      }
+    ];
+
+    let currentStudent = '';
+    let score = 0;
+    let xp = 0;
+    let currentStage = 0;
+    let currentQuestion = 0;
+    let draggedItem = null;
+
+    function $(id){ return document.getElementById(id); }
+
+    function showScreen(id){
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      $(id).classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function refreshStatus(){
+      const stageName = stages[currentStage] ? stages[currentStage].subtitle : 'البداية';
+      const studentText = `🎯 الطالب: ${currentStudent || 'لم يبدأ بعد'}`;
+      const scoreText = `⭐ النقاط: ${score}`;
+      const xpText = `⚡ XP: ${xp}`;
+      const levelText = `🧭 المستوى الحالي: ${stageName}`;
+      ['studentBadge','studentBadge2'].forEach(id=>$(id).textContent = studentText);
+      ['scoreBadge','scoreBadge2'].forEach(id=>$(id).textContent = scoreText);
+      ['xpBadge','xpBadge2'].forEach(id=>$(id).textContent = xpText);
+      ['levelBadge','levelBadge2'].forEach(id=>$(id).textContent = levelText);
+      $('stageProgressBadge').textContent = stages[currentStage] ? `🔐 القفل: ${Math.min(currentQuestion+1, stages[currentStage].questions.length)} / ${stages[currentStage].questions.length}` : '🔐 القفل';
+      renderOverview();
+      renderJourney();
+    }
+
+    function renderOverview(){
+      const host = $('stagesOverview');
+      host.innerHTML = '';
+      stages.forEach((s, idx) => {
+        const status = idx < currentStage ? 'done' : idx === currentStage && currentStudent ? 'current' : idx > currentStage ? 'locked' : '';
+        const el = document.createElement('div');
+        el.className = `stage-card ${status}`;
+        el.innerHTML = `
+          <div class="stage-head">
+            <strong>${s.title}</strong>
+            <span class="badge ${s.difficulty}">${s.subtitle}</span>
+          </div>
+          <div class="muted">${s.story}</div>
+        `;
+        host.appendChild(el);
+      });
+    }
+
+    function renderJourney(){
+      const host = $('journeyNodes');
+      host.innerHTML = '';
+      stages.forEach((s, idx) => {
+        const node = document.createElement('div');
+        node.className = 'node';
+        if(idx < currentStage) node.classList.add('done');
+        if(idx === currentStage && currentStudent) node.classList.add('current');
+        node.innerHTML = `<div>${s.short}</div><small>${s.subtitle}</small>`;
+        host.appendChild(node);
+      });
+    }
+
+    function startGame(){
+      currentStudent = $('studentName').value.trim() || 'طالب متميز';
+      score = 0; xp = 0; currentStage = 0; currentQuestion = 0;
+      saveProgress();
+      refreshStatus();
+      openStage(0);
+    }
+
+    function openStage(stageIndex){
+      currentStage = stageIndex;
+      currentQuestion = 0;
+      showScreen('screen-game');
+      renderStage();
+      saveProgress();
+    }
+
+    function renderStage(){
+      const s = stages[currentStage];
+      $('stageTag').textContent = s.subtitle;
+      $('stageTitle').textContent = s.title;
+      $('stageStory').textContent = s.story;
+      $('stageResult').style.display = 'none';
+      $('questionHost').innerHTML = '';
+      renderQuestion();
+      refreshStatus();
+      setupDragEvents();
+    }
+
+    function renderQuestion(){
+      const s = stages[currentStage];
+      const q = s.questions[currentQuestion];
+      const host = $('questionHost');
+      host.innerHTML = '';
+
+      const wrap = document.createElement('div');
+      wrap.className = 'question active';
+      let html = `<div><strong>القفل ${currentQuestion+1}:</strong> ${q.prompt}</div>`;
+      if(q.code) html += `<div class="code">${escapeHtml(q.code)}</div>`;
+
+      if(q.type === 'mcq'){
+        html += `<div class="answers">` + q.options.map((opt, idx) =>
+          `<button class="answer-btn" onclick="answerMCQ(${idx})">${escapeHtml(opt)}</button>`).join('') + `</div>`;
+      }
+      else if(q.type === 'input'){
+        html += `
+          <div class="name-box" style="margin:16px 0 0;max-width:420px">
+            <input type="text" id="shortAnswer" placeholder="اكتب الإجابة هنا" />
+          </div>
+          <div class="btn-row"><button class="primary" onclick="answerInput()">تحقق من الإجابة</button></div>`;
+      }
+      else if(q.type === 'checkbox'){
+        html += `<div class="check-list">` + q.options.map((opt, idx)=>
+          `<label class="check-item"><input type="checkbox" class="check-opt" value="${idx}"> ${escapeHtml(opt)}</label>`).join('') + `</div>
+          <div class="btn-row"><button class="primary" onclick="answerCheckbox()">تحقق من الاختيارات</button></div>`;
+      }
+      else if(q.type === 'drag'){
+        html += `<div class="code">` + q.accepts.map((_,idx)=>`<span class="drop-slot" data-group="drag${currentStage}_${currentQuestion}" data-accept="${escapeAttr(q.accepts[idx])}">اسحب هنا</span>${idx<q.accepts.length-1?'<br>':''}`).join('') + `</div>`;
+        html += `<div class="drag-bank">` + shuffle([...q.items]).map(item=>`<div class="drag-item" draggable="true" data-group="drag${currentStage}_${currentQuestion}" data-value="${escapeAttr(item)}">${escapeHtml(item)}</div>`).join('') + `</div>`;
+        html += `<div class="btn-row"><button class="secondary" onclick="resetDragCurrent()">إعادة الترتيب</button><button class="primary" onclick="answerDrag()">تحقق من الإجابة</button></div>`;
+      }
+
+      html += `<div class="feedback" id="feedback"></div>`;
+      wrap.innerHTML = html;
+      host.appendChild(wrap);
+    }
+
+    function answerMCQ(idx){
+      const q = stages[currentStage].questions[currentQuestion];
+      idx === q.correct ? handleCorrect(q.points) : handleWrong(4);
+    }
+
+    function normalizeAnswer(v){
+      return String(v).trim().replace(/\s+/g,' ').toLowerCase();
+    }
+
+    function answerInput(){
+      const q = stages[currentStage].questions[currentQuestion];
+      const val = $('shortAnswer').value;
+      normalizeAnswer(val) === normalizeAnswer(q.answer) ? handleCorrect(q.points) : handleWrong(4);
+    }
+
+    function answerCheckbox(){
+      const q = stages[currentStage].questions[currentQuestion];
+      const checked = [...document.querySelectorAll('.check-opt:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+      const expected = [...q.correctChecks].sort((a,b)=>a-b);
+      JSON.stringify(checked) === JSON.stringify(expected) ? handleCorrect(q.points) : handleWrong(5);
+    }
+
+    function answerDrag(){
+      const group = `drag${currentStage}_${currentQuestion}`;
+      const slots = document.querySelectorAll(`.drop-slot[data-group="${group}"]`);
+      const ok = [...slots].every(slot => slot.dataset.value === slot.dataset.accept);
+      ok ? handleCorrect(stages[currentStage].questions[currentQuestion].points) : handleWrong(5);
+    }
+
+    function handleCorrect(points){
+      score += points;
+      xp += points * 2;
+      const fb = $('feedback');
+      fb.textContent = `إجابة صحيحة ✅ +${points} نقطة`;
+      fb.className = 'feedback success';
+      saveProgress();
+      refreshStatus();
+      setTimeout(nextQuestion, 700);
+    }
+
+    function handleWrong(penalty){
+      score = Math.max(0, score - penalty);
+      const fb = $('feedback');
+      fb.textContent = `إجابة غير صحيحة ❌ تم خصم ${penalty} نقاط`;
+      fb.className = 'feedback error';
+      saveProgress();
+      refreshStatus();
+    }
+
+    function nextQuestion(){
+      const s = stages[currentStage];
+      currentQuestion++;
+      if(currentQuestion >= s.questions.length){
+        stageCompleted();
+        return;
+      }
+      renderQuestion();
+      refreshStatus();
+      setupDragEvents();
+      saveProgress();
+    }
+
+    function stageCompleted(){
+      const s = stages[currentStage];
+      $('stageResult').style.display = 'block';
+      $('stageResultTitle').textContent = `تم إنهاء ${s.subtitle}`;
+      $('stageResultText').textContent = `أحسنت! أنهيت هذه المرحلة بنجاح ويمكنك الانتقال إلى المرحلة التالية.`;
+
+      const btns = $('stageResultButtons');
+      btns.innerHTML = '';
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'primary';
+      if(currentStage < stages.length - 1){
+        nextBtn.textContent = 'الانتقال للمرحلة التالية';
+        nextBtn.onclick = () => {
+          currentStage++;
+          currentQuestion = 0;
+          launchCelebration();
+          renderStage();
+          saveProgress();
+        };
+      } else {
+        nextBtn.textContent = 'عرض النتيجة النهائية';
+        nextBtn.onclick = finishGame;
+      }
+      btns.appendChild(nextBtn);
+
+      const homeBtn = document.createElement('button');
+      homeBtn.className = 'secondary';
+      homeBtn.textContent = 'العودة للرئيسية';
+      homeBtn.onclick = () => showScreen('screen-home');
+      btns.appendChild(homeBtn);
+
+      launchCelebration();
+      refreshStatus();
+      saveProgress();
+    }
+
+    function finishGame(){
+      saveToLeaderboard();
+      renderLeaderboard();
+      $('finalSummary').innerHTML = `🎯 الطالب: <strong>${currentStudent}</strong> — ⭐ النقاط النهائية: <strong>${score}</strong> — ⚡ XP: <strong>${xp}</strong>`;
+      showScreen('screen-final');
+      launchCelebration();
+      localStorage.removeItem('tech108Progress');
+    }
+
+    function saveProgress(){
+      const data = {currentStudent, score, xp, currentStage, currentQuestion};
+      localStorage.setItem('tech108Progress', JSON.stringify(data));
+    }
+
+    function loadSavedProgress(){
+      const raw = localStorage.getItem('tech108Progress');
+      if(!raw){
+        alert('لا يوجد تقدم محفوظ حالياً.');
+        return;
+      }
+      const data = JSON.parse(raw);
+      currentStudent = data.currentStudent || '';
+      score = data.score || 0;
+      xp = data.xp || 0;
+      currentStage = data.currentStage || 0;
+      currentQuestion = data.currentQuestion || 0;
+      renderOverview();
+      renderJourney();
+      showScreen('screen-game');
+      const s = stages[currentStage];
+      $('stageTag').textContent = s.subtitle;
+      $('stageTitle').textContent = s.title;
+      $('stageStory').textContent = s.story;
+      $('stageResult').style.display = 'none';
+      renderQuestion();
+      refreshStatus();
+      setupDragEvents();
+    }
+
+    function restartAll(){
+      localStorage.removeItem('tech108Progress');
+      currentStudent = '';
+      score = 0;
+      xp = 0;
+      currentStage = 0;
+      currentQuestion = 0;
+      $('studentName').value = '';
+      renderOverview();
+      renderJourney();
+      refreshStatus();
+      showScreen('screen-home');
+    }
+
+    function getLeaderboard(){
+      return JSON.parse(localStorage.getItem('tech108Leaderboard') || '[]');
+    }
+
+    function saveToLeaderboard(){
+      const data = getLeaderboard();
+      data.push({name: currentStudent || 'طالب متميز', score, xp});
+      data.sort((a,b)=> b.score !== a.score ? b.score - a.score : b.xp - a.xp);
+      localStorage.setItem('tech108Leaderboard', JSON.stringify(data.slice(0,10)));
+    }
+
+    function renderLeaderboard(){
+      const board = $('leaderboardList');
+      const data = getLeaderboard();
+      board.innerHTML = '';
+      if(data.length === 0){
+        board.innerHTML = '<li>بانتظار أول بطل...</li>';
+        return;
+      }
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} — ${item.score} نقطة — XP ${item.xp}`;
+        board.appendChild(li);
+      });
+    }
+
+    function clearLeaderboard(){
+      localStorage.removeItem('tech108Leaderboard');
+      renderLeaderboard();
+    }
+
+    function launchCelebration(){
+      const layer = $('celebration');
+      layer.innerHTML = '';
+      layer.style.display = 'block';
+      const colors = ['#3b82f6','#06b6d4','#f59e0b','#22c55e','#f97316','#8b5cf6'];
+      for(let i=0;i<120;i++){
+        const piece = document.createElement('div');
+        piece.className = 'confetti';
+        piece.style.left = Math.random()*100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+        piece.style.animationDelay = (Math.random()*0.8) + 's';
+        piece.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
+        layer.appendChild(piece);
+      }
+      setTimeout(()=>{layer.style.display='none'; layer.innerHTML='';}, 4200);
+    }
+
+    function setupDragEvents(){
+      document.querySelectorAll('.drag-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          if(item.classList.contains('used')){ e.preventDefault(); return; }
+          draggedItem = item;
+        });
+        item.addEventListener('click', () => {
+          if(item.classList.contains('used')) return;
+          const group = item.dataset.group;
+          const emptySlot = document.querySelector(`.drop-slot[data-group="${group}"]:not(.filled-slot)`);
+          if(!emptySlot) return;
+          handleDropToSlot(emptySlot, item);
+        });
+      });
+
+      document.querySelectorAll('.drop-slot').forEach(slot => {
+        slot.addEventListener('dragover', e => e.preventDefault());
+        slot.addEventListener('drop', e => {
+          e.preventDefault();
+          if(!draggedItem) return;
+          handleDropToSlot(slot, draggedItem);
+          draggedItem = null;
+        });
+      });
+    }
+
+    function handleDropToSlot(slot, item){
+      if(slot.dataset.group !== item.dataset.group) return;
+
+      const oldValue = slot.dataset.value;
+      if(oldValue){
+        const oldItem = [...document.querySelectorAll(`.drag-item[data-group="${slot.dataset.group}"]`)].find(el => el.dataset.value === oldValue);
+        if(oldItem) oldItem.classList.remove('used');
+      }
+      slot.textContent = item.dataset.value;
+      slot.dataset.value = item.dataset.value;
+      slot.classList.add('filled-slot');
+      item.classList.add('used');
+    }
+
+    function resetDragCurrent(){
+      const group = `drag${currentStage}_${currentQuestion}`;
+      document.querySelectorAll(`.drop-slot[data-group="${group}"]`).forEach(slot => {
+        slot.textContent = 'اسحب هنا';
+        slot.dataset.value = '';
+        slot.classList.remove('filled-slot');
+      });
+      document.querySelectorAll(`.drag-item[data-group="${group}"]`).forEach(item => item.classList.remove('used'));
+    }
+
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    function escapeHtml(text){
+      return String(text)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+    function escapeAttr(text){
+      return String(text).replace(/"/g,'&quot;');
+    }
+
+    renderOverview();
+    renderJourney();
+    renderLeaderboard();
+    refreshStatus();
+
+    // visual polish
+    document.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('mouseenter', () => btn.style.filter = 'brightness(1.05)');
+      btn.addEventListener('mouseleave', () => btn.style.filter = 'none');
+    });
+
+  </script>
+</body>
+</html>
